@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 
-public class RedBlackTree{
+public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
 
     private enum Color {RED, BLACK}
 
@@ -14,24 +14,22 @@ public class RedBlackTree{
     private Node NIL;
 
     public RedBlackTree() {
-        NIL = new Node(Color.BLACK, null,null,null, 0);
+        NIL = new Node(Color.BLACK, null, null, null, (E) new Integer(0));
     }
 
-    private void rightRotate(Node y){
+    private void rightRotate(Node y) {
         Node x = y.left;
         y.left = x.right;
-        if(!x.right.equals(NIL)){
+        if (!x.right.equals(NIL)) {
             x.right.parent = y;
         }
         x.parent = y.parent;
-        if(y.parent==null){
+        if (y.parent == null) {
             root = x;
-        }
-        else{
-            if(y.equals(y.parent.left)){
+        } else {
+            if (y.equals(y.parent.left)) {
                 y.parent.left = x;
-            }
-            else{
+            } else {
                 y.parent.right = x;
             }
         }
@@ -39,19 +37,18 @@ public class RedBlackTree{
         y.parent = x;
     }
 
-    private void insertFix(Node z){
+    private void insertFix(Node z) {
         Node y;
-        while(z.parent!=null && z.parent.color==Color.RED){ //!=null(?)
-            if(z.parent==z.parent.parent.left){
+        while (z.parent != null && z.parent.color == Color.RED) { //!=null(?)
+            if (z.parent == z.parent.parent.left) {
                 y = z.parent.parent.right;
-                if(y.color==Color.RED){
+                if (y.color == Color.RED) {
                     z.parent.color = Color.BLACK;
                     y.color = Color.BLACK;
                     z.parent.parent.color = Color.RED;
                     z = z.parent.parent;
-                }
-                else{
-                    if(z==z.parent.right){
+                } else {
+                    if (z == z.parent.right) {
                         z = z.parent;
                         leftRotate(z);
                     }
@@ -59,17 +56,15 @@ public class RedBlackTree{
                     z.parent.parent.color = Color.RED;
                     rightRotate(z.parent.parent);
                 }
-            }
-            else{
+            } else {
                 y = z.parent.parent.left;
-                if(y.color==Color.RED){
+                if (y.color == Color.RED) {
                     z.parent.color = Color.BLACK;
                     y.color = Color.BLACK;
                     z.parent.parent.color = Color.RED;
                     z = z.parent.parent;
-                }
-                else{
-                    if(z==z.parent.left){
+                } else {
+                    if (z == z.parent.left) {
                         z = z.parent;
                         rightRotate(z);
                     }
@@ -82,21 +77,19 @@ public class RedBlackTree{
         root.color = Color.BLACK;
     }
 
-    private void leftRotate(Node x){
+    private void leftRotate(Node x) {
         Node y = x.right;
         x.right = y.left;
-        if(!y.left.equals(NIL)){
+        if (!y.left.equals(NIL)) {
             y.left.parent = x;
         }
         y.parent = x.parent;
-        if(x.parent==null){
+        if (x.parent == null) {
             root = y;
-        }
-        else{
-            if(x.equals(x.parent.left)){
+        } else {
+            if (x.equals(x.parent.left)) {
                 x.parent.left = y;
-            }
-            else{
+            } else {
                 x.parent.right = y;
             }
         }
@@ -104,7 +97,8 @@ public class RedBlackTree{
         x.parent = y;
     }
 
-    public int first() {
+    @Override
+    public E first() {
         if (isEmpty()) {
             throw new NoSuchElementException("set is empty, no first element");
         }
@@ -115,8 +109,8 @@ public class RedBlackTree{
         return curr.key;
     }
 
-
-    public int last() {
+    @Override
+    public E last() {
         if (isEmpty()) {
             throw new NoSuchElementException("set is empty, no last element");
         }
@@ -128,14 +122,14 @@ public class RedBlackTree{
     }
 
 
-    public List inorderTraverse() {
-        List result = new ArrayList<>();
-        inorderTraverse(root,result);
+    public List<E> inorderTraverse() {
+        List<E> result = new ArrayList<>();
+        inorderTraverse(root, result);
         return result;
     }
 
-    private void inorderTraverse(Node node, List list) {
-        if (node==null || node.equals(NIL)) {
+    private void inorderTraverse(Node node, List<E> list) {
+        if (node == null || node.equals(NIL)) {
             return;
         }
         inorderTraverse(node.left, list);
@@ -150,39 +144,44 @@ public class RedBlackTree{
 
 
     public boolean isEmpty() {
-        return size==0;
+        return size == 0;
     }
 
-
-    public boolean contains(int value) {
-        return FindP(value,root);
+    @Override
+    public boolean contains(E value) {
+        return findP(value, root);
     }
 
-    private boolean FindP(int key, Node node){
-        if(node==null || node.equals(NIL)){
+    private boolean findP(E key, Node node) {
+        if (key == null) {
+            throw new NullPointerException();
+        }
+        if (node == null || node.equals(NIL)) {
             return false;
         }
-        if(key == node.key){
+        if (key.equals(node.key)) {
             return true;
         }
-        if(key < node.key){
-            return FindP(key,node.left);
+        if (key.compareTo(node.key) < 0) {
+            return findP(key, node.left);
         } else {
-            return FindP(key, node.right);
+            return findP(key, node.right);
         }
     }
 
-
-    public boolean add(int value) {
-        if(this.contains(value)){
+    @Override
+    public boolean add(E value) {
+        if (value == null) {
+            throw new NullPointerException();
+        }
+        if (this.contains(value)) {
             System.out.println("Tree contains node with value = " + value + ".");
             return false;
         }
-        if(root==null){
-            root = new Node(Color.BLACK,NIL,NIL,null,value);
+        if (root == null) {
+            root = new Node(Color.BLACK, NIL, NIL, null, value);
             System.out.println("Root node created with value = " + value + ".");
-        }
-        else {
+        } else {
             insert(new Node(Color.BLACK, null, null, null, value));
             System.out.println("Node with value = " + value + " added.");
         }
@@ -190,27 +189,24 @@ public class RedBlackTree{
         return true;
     }
 
-    private void insert(Node z){
+    private void insert(Node z) {
         Node y = NIL;
         Node x = root;
-        while(!x.equals(NIL)){
+        while (!x.equals(NIL)) {
             y = x;
-            if(z.key<x.key){
+            if (z.key.compareTo(x.key) < 0) {
                 x = x.left;
-            }
-            else{
+            } else {
                 x = x.right;
             }
         }
         z.parent = y;
-        if(y.equals(NIL)){
+        if (y.equals(NIL)) {
             root = z;
-        }
-        else{
-            if(z.key<y.key){
+        } else {
+            if (z.key.compareTo(y.key) < 0) {
                 y.left = z;
-            }
-            else{
+            } else {
                 y.right = z;
             }
         }
@@ -220,117 +216,111 @@ public class RedBlackTree{
         insertFix(z);
     }
 
+    @Override
+    public boolean remove(E value) {
+        if (value == null) {
+            throw new NullPointerException();
+        }
+        if (root == null) {
+            return false;
+        }
+        Node n = root;
+        Node delNode = null;
+        Node child = root;
 
-    public boolean remove(int value) {
-        Node r = findNode(root,value);
-        if(r==null){
+        while (child != null) {
+            n = child;
+            int cmp = value.compareTo(n.key);
+            child = cmp >= 0 ? n.right : n.left;
+            if (cmp == 0) {
+                delNode = n;
+            }
+        }
+        if (delNode == null) {
             System.out.println("Removing node with value = "
                     + value
                     + ". Tree doesn't contains this node.");
             return false;
-        }
-        else{
-            if(size==1){
-                root = null;
-            }
-            else {
-                deleteP(r);
-            }
-        }
-        System.out.println("Removing node with value = "
-                + value
-                + ". Successful.");
-        size--;
-        return true;
-    }
-
-    private Node findNode(Node node, int key){
-        if(node==null || node.equals(NIL)){
-            return null;
-        }
-        if(node.key==key){
-            return node;
-        }
-        if(node.key>key){
-            return findNode(node.left,key);
-        }
-        else{
-            return findNode(node.right, key);
+        } else {
+            delNode.key = n.key;
+            deleteP(delNode);
+            System.out.println("Removing node with value = "
+                    + value
+                    + ". Successful.");
+            return true;
         }
     }
 
-    private Node minimum(Node x){
-        while(!x.left.equals(NIL)){
+    private Node minimum(Node x) {
+        while (!x.left.equals(NIL)) {
             x = x.left;
         }
         return x;
     }
 
-    private Node successor(Node x){
+    private Node successor(Node x) {
         Node y;
-        if(!x.right.equals(NIL)){
+        if (!x.right.equals(NIL)) {
             return minimum(x.right);
         }
         y = x.parent;
-        while(!y.equals(NIL) && x.equals(y.right)){
+        while (!y.equals(NIL) && x.equals(y.right)) {
             x = y;
             y = y.parent;
         }
         return y;
     }
 
-    private void deleteP(Node z){
-        Node x,y;
-        if(z.left.equals(NIL) || z.right.equals(NIL)){
-            y = z;
+    private void deleteP(Node z) {
+        if (z == null || z.left == null || z.right == null) {
+            throw new NullPointerException();
         }
-        else{
+        Node x, y;
+        if (z.left.equals(NIL) || z.right.equals(NIL)) {
+            y = z;
+        } else {
             y = successor(z);
         }
-        if(!y.left.equals(NIL)){
+        if (!y.left.equals(NIL)) {
             x = y.left;
-        }
-        else{
+        } else {
             x = y.right;
         }
         x.parent = y.parent;
-        if(y.parent==null){
+        if (y.parent == null) {
             root = x;
-        }
-        else{
-            if(y.equals(y.parent.left)){
+        } else {
+            if (y.equals(y.parent.left)) {
                 y.parent.left = x;
-            }
-            else{
+            } else {
                 y.parent.right = x;
             }
         }
-        if(!y.equals(z)){
+        if (!y.equals(z)) {
             z.key = y.key;
         }
-        if(y.color==Color.BLACK){
+        if (y.color == Color.BLACK) {
             fixDelete(x);
         }
     }
 
-    private void fixDelete(Node x){
+    private void fixDelete(Node x) {
         Node w;
-        while(!x.equals(root) && x.color==Color.BLACK){
-            if(x.equals(x.parent.left)){
+        while (!x.equals(root) && x.color == Color.BLACK) {
+            if (x.equals(x.parent.left)) {
                 w = x.parent.right;
-                if(w.color==Color.RED){
+                if (w.color == Color.RED) {
                     w.color = Color.BLACK;
                     x.parent.color = Color.RED;
                     leftRotate(x.parent);
                     w = x.parent.right;
                 }
 
-                if(w.left.color==Color.BLACK && w.right.color==Color.BLACK){
+                if (w.left.color == Color.BLACK && w.right.color == Color.BLACK) {
                     w.color = Color.RED;
                     x = x.parent;
-                }
-                else{
-                    if(w.right.color==Color.BLACK){
+                } else {
+                    if (w.right.color == Color.BLACK) {
                         w.left.color = Color.BLACK;
                         w.color = Color.RED;
                         rightRotate(w);
@@ -342,22 +332,20 @@ public class RedBlackTree{
                     leftRotate(x.parent);
                     x = root;
                 }
-            }
-            else{
+            } else {
                 w = x.parent.left;
-                if(w.color==Color.RED){
+                if (w.color == Color.RED) {
                     w.color = Color.BLACK;
                     x.parent.color = Color.RED;
                     rightRotate(x.parent);
                     w = x.parent.left;
                 }
 
-                if(w.right.color==Color.BLACK && w.left.color==Color.BLACK){
+                if (w.right.color == Color.BLACK && w.left.color == Color.BLACK) {
                     w.color = Color.RED;
                     x = x.parent;
-                }
-                else{
-                    if(w.left.color==Color.BLACK){
+                } else {
+                    if (w.left.color == Color.BLACK) {
                         w.right.color = Color.BLACK;
                         w.color = Color.RED;
                         leftRotate(w);
@@ -374,14 +362,14 @@ public class RedBlackTree{
         x.color = Color.BLACK;
     }
 
-    private class Node {
+    public class Node {
         private Color color;
         private Node left;
         private Node right;
         private Node parent;
-        private int key;
+        private E key;
 
-        private Node(Color color, Node left, Node right, Node parent, int key) {
+        private Node(Color color, Node left, Node right, Node parent, E key) {
             this.color = color;
             this.left = left;
             this.right = right;
@@ -394,13 +382,13 @@ public class RedBlackTree{
                     && this.left == node.left
                     && this.right == node.right
                     && this.parent == node.parent
-                    && this.key == node.key;  // key - integer
+                    && this.key.equals(node.key);
         }
     }
 
     public static void main(String[] args) {
-        RedBlackTree tree = new RedBlackTree();
-        //Checking adding, removing ( correct, incorrect).
+        RedBlackTree<Integer> tree = new RedBlackTree<>(); // Integer keys
+        //Checking adding, removing ( correct, incorrect)
         tree.add(10);
         tree.add(215);
         tree.add(22);
@@ -409,10 +397,10 @@ public class RedBlackTree{
         System.out.println(tree.inorderTraverse().toString());
         tree.remove(10);
         tree.remove(5);
-        tree.add(0);
+        tree.add(2);
         System.out.println(tree.inorderTraverse().toString());
-        tree.remove(0);
-        tree.remove(-1);
+        tree.remove(-4);
+        tree.remove(2);
         System.out.println(tree.inorderTraverse().toString());
     }
 }

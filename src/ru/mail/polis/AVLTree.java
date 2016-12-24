@@ -1,12 +1,8 @@
 package ru.mail.polis;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
-
     private Node root;
     private int size;
     private final Comparator<E> comparator;
@@ -50,7 +46,7 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
         return result;
     }
 
-    private void inorderTraverse(Node node, List<E> list) {
+    public void inorderTraverse(Node node, List<E> list) {
         if (node == null) {
             return;
         }
@@ -61,7 +57,7 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
 
     @Override
     public int size() {
-        return 0;
+        return size;
     }
 
     @Override
@@ -74,10 +70,10 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
         if (value == null) {
             throw new NullPointerException();
         }
-        return FindP(value, root);
+        return findP(value, root);
     }
 
-    private boolean FindP(E key, Node node) {
+    private boolean findP(E key, Node node) {
         if (node == null) {
             return false;
         }
@@ -85,9 +81,9 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
             return true;
         }
         if (compare(key, node.key) == -1) {
-            return FindP(key, node.left);
+            return findP(key, node.left);
         } else {
-            return FindP(key, node.right);
+            return findP(key, node.right);
         }
     }
 
