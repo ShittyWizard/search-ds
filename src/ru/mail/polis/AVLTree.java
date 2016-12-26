@@ -15,6 +15,10 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
         this.comparator = comparator;
     }
 
+    private int height(Node node) {
+        return node == null ? -1 : node.height;
+    }
+
     @Override
     public E first() {
         if (isEmpty()) {
@@ -156,65 +160,47 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
         return node;
     }
 
+    private boolean booleanRemove;
+
     @Override
     public boolean remove(E value) {
         if (value == null) {
             throw new NullPointerException();
         }
-        if (!this.contains(value)) {
-            System.out.println("Removing node with value = "
-                    + value
-                    + ". Tree doesn't contains this node.");
-            return false;
-        }
-        if (size == 1) {
-            root = null;
-        } else {
-            deleteP(root, value);
-            System.out.println("Removing node with value = "
-                    + value
-                    + ". Successful.");
-        }
-        size--;
-        return true;
+        booleanRemove = false;
+        root = remove(root, value);
+        return booleanRemove;
     }
 
-    private Node deleteP(Node node, E key) {
+    private Node remove(Node node, E value) {
         if (node == null) {
             return null;
         }
-
-
-        if (compare(key, node.key) == -1) {             // key < node.key
-            node.left = deleteP(node.left, key);
+        int cmp = compare(value, node.key);
+        if (cmp < 0) {
+            node.left = remove(node.left, value);
+        } else if (cmp > 0) {
+            node.right = remove(node.right, value);
         } else {
-            if (compare(key, node.key) == 1) {          // key > node.key
-                node.right = deleteP(node.right, key);
-            } else {                                    // key = node.key
-                Node q = node.left;
-                Node r = node.right;
-                if (r == null) {
-                    return q;
-                }
-                Node min = findMin(r);
-                min.right = removeMin(r);
-                min.left = q;
-                Node f = balance(min);
-                if (node.equals(root)) {
-                    root = f;
-                }
-                return f;
+            booleanRemove = true;
+            if (node.left == null) {
+                return node.right;
+            } else if (node.right == null) {
+                return node.left;
+            } else {
+                Node node2 = node;
+                node = min(node2.right);
+                node.right = removeMin(node2.right);
+                node.left = node2.left;
             }
         }
-        Node f = balance(node);
-        if (node.equals(root)) {
-            root = f;
-        }
-        return f;
+        node.height = 1 + Math.max(height(node.left), height(node.right));
+        return balance(node);
     }
 
-    private Node findMin(Node node) {
-        return node.left != null ? findMin(node.left) : node;
+
+    private Node min(Node node) {
+        return (node.left == null) ? node : min(node.left);
     }
 
     private Node removeMin(Node node) {
