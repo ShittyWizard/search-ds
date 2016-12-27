@@ -169,6 +169,9 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
         }
         booleanRemove = false;
         root = remove(root, value);
+        if (booleanRemove) {
+            size--;
+        }
         return booleanRemove;
     }
 
@@ -268,13 +271,16 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
 
 
     public static void main(String[] args) {
-        AVLTree<Integer> tree = new AVLTree<>();
-        tree.add(1);
-        tree.add(10);
-        tree.add(4);
-        tree.add(2);
-        tree.remove(3); // check removing with value, which doesn't contains in tree
-        tree.remove(4); // check removing with correct value
-        System.out.println(tree.inorderTraverse().toString());
+        int LEN = 10;
+        ISortedSet<Integer> set = new AVLTree<>();
+        for (int value = 0; value < LEN; value++) {
+            set.add(value);
+        }
+        System.out.println(set.size());
+        for (int value = LEN; value >= 0; value--) {
+            System.out.println(value + ": " + set.contains(value)
+                    + ", " + set.remove(value) + ", " + set.size()
+            );
+        }
     }
 }
