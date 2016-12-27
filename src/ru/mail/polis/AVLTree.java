@@ -50,7 +50,7 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
         return result;
     }
 
-    public void inorderTraverse(Node node, List<E> list) {
+    private void inorderTraverse(Node node, List<E> list) {
         if (node == null) {
             return;
         }
@@ -266,21 +266,6 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
                 l = left.height();
             }
             height = (l > r ? l : r) + 1;
-        }
-    }
-
-
-    public static void main(String[] args) {
-        int LEN = 10;
-        ISortedSet<Integer> set = new AVLTree<>();
-        for (int value = 0; value < LEN; value++) {
-            set.add(value);
-        }
-        System.out.println(set.size());
-        for (int value = LEN; value >= 0; value--) {
-            System.out.println(value + ": " + set.contains(value)
-                    + ", " + set.remove(value) + ", " + set.size()
-            );
         }
     }
 }
