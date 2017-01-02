@@ -33,6 +33,7 @@ public class testTree {
     public void testRedBlackTree() {
         SortedSet<Integer> OK = new TreeSet<>();
         ISortedSet<Integer> set = new RedBlackTree<>();
+        /**
         Random r = new Random();
         for (int i = 0; i < 1000; i++) {
             int value = r.nextInt(1000);
@@ -45,6 +46,21 @@ public class testTree {
             assert OK.size() == set.size();
             assert OK.first() == set.first();
             assert OK.last().equals(set.last());
+        }
+         **/
+        for (int i = -10; i <0; i++){
+            set.add(i);
+            OK.add(i);
+            System.out.println(set.inorderTraverse());
+            System.out.println(OK.toString());
+            assert (set.contains(i) == OK.contains(i));
+        }
+        for (int i  = 0; i >= -10; i--){
+            set.remove(i);
+            OK.remove(i);
+            System.out.println(set.inorderTraverse());
+            System.out.println(OK.toString());
+            assert (set.contains(i) == OK.contains(i));
         }
     }
 }

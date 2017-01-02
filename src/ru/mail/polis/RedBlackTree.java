@@ -109,10 +109,6 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
         if (isEmpty()) {
             throw new NoSuchElementException("set is empty, no first element");
         }
-        Node curr = root;
-        while (curr.left != null) {
-            curr = curr.left;
-        }
         return minimum(root).key;
     }
 
@@ -120,10 +116,6 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
     public E last() {
         if (isEmpty()) {
             throw new NoSuchElementException("set is empty, no last element");
-        }
-        Node curr = root;
-        while (curr.right != null) {
-            curr = curr.right;
         }
         return maximum(root).key;
     }
@@ -182,15 +174,15 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
             throw new NullPointerException();
         }
         if (this.contains(value)) {
-            System.out.println("Tree contains node with value = " + value + ".");
+            //System.out.println("Tree contains node with value = " + value + ".");
             return false;
         }
         if (root == null) {
             root = new Node(BLACK, NIL, NIL, null, value);
-            System.out.println("Root node created with value = " + value + ".");
+            //System.out.println("Root node created with value = " + value + ".");
         } else {
             insert(new Node(BLACK, null, null, null, value));
-            System.out.println("Node with value = " + value + " added.");
+            //System.out.println("Node with value = " + value + " added.");
         }
         size++;
         return true;
@@ -231,7 +223,7 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
         }
         Node currentNode = root;
         if (!contains(value)) {
-            System.out.println("Node with this value = " + value + " does not contain.");
+            //System.out.println("Node with this value = " + value + " does not contain.");
             return false;
         }
         while (currentNode != NIL && currentNode.key.compareTo(value) != 0) {
@@ -268,7 +260,7 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
         if (Y.color == BLACK) {
             fixDelete(X);
         }
-        System.out.println("Removing node with value = " + value + ". Successful.");
+        //System.out.println("Removing node with value = " + value + ". Successful.");
         size--;
         return true;
     }
@@ -373,27 +365,14 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
         }
 
         private boolean equals(Node node) {
+            if (node == null){
+                return false;
+            }
             return this.color == node.color
                     && this.left == node.left
                     && this.right == node.right
                     && this.parent == node.parent
                     && this.key.equals(node.key);
-        }
-    }
-
-    public static void main(String[] args) {
-        int LEN = 10;
-        ISortedSet<Integer> set = new RedBlackTree<>();
-
-        for (int value = 0; value <= LEN; value++) {
-            set.add(value);
-        }
-        System.out.println(set.size());
-
-        for (int value = LEN; value >= 0; value--) {
-            set.remove(value);
-            System.out.println(set.inorderTraverse());
-            System.out.println(set.size());
         }
     }
 }
