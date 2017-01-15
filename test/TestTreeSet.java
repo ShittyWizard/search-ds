@@ -1,12 +1,5 @@
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.NoSuchElementException;
-import java.util.Random;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 import ru.mail.polis.AVLTree;
@@ -23,9 +16,11 @@ public class TestTreeSet {
     };
     private final Comparator<Integer> ALL_EQUALS = (v1, v2) -> 0;
 
-    //private final List<Comparator<Integer>> comparators = Arrays.asList(
-    //        null
-    //);
+    private final List<Comparator<Integer>> comparators = Arrays.asList(
+            null,
+            EVEN_FIRST,
+            ALL_EQUALS
+    );
 
     public static void main(String[] args) {
         new TestTreeSet().run();
@@ -66,13 +61,13 @@ public class TestTreeSet {
             bigRandomTest(create(className, null));
             return null;
         });
-        //for (ListIterator<Comparator<Integer>> iterator = comparators.listIterator(); iterator.hasNext(); ) {
-        //    Comparator<Integer> comp = iterator.next();
-        //    run(() -> {
-        //        testTree(iterator.previousIndex(), new TreeSet<>(comp), create(className, comp));
-        //        return null;
-        //    });
-        //}
+        for (ListIterator<Comparator<Integer>> iterator = comparators.listIterator(); iterator.hasNext(); ) {
+            Comparator<Integer> comp = iterator.next();
+            run(() -> {
+                testTree(iterator.previousIndex(), new TreeSet<>(comp), create(className, comp));
+                return null;
+            });
+        }
     }
 
     private void smallTest(ISortedSet<Integer> set) {
@@ -128,13 +123,8 @@ public class TestTreeSet {
         //System.out.println(set.inorderTraverse());
         //System.out.println("OK - " + OK.contains(value)
         //        + " set - " + set.contains(value));
-        assert OK.contains(value) == set.contains(value); //tut
-        /**
-         1
-         [0]
-         [0]
-         OK - true set - false
-         */
+        assert OK.contains(value) == set.contains(value);
+
         if (!OK.isEmpty()) {
             assert OK.first().equals(set.first());
             assert OK.last().equals(set.last());
@@ -147,15 +137,12 @@ public class TestTreeSet {
             assert OK.remove(value) == set.remove(value);
         }
         assert OK.size() == set.size();
-        System.out.println(value + " : " + "OK - " + OK.contains(value)
-        + " set - " + set.contains(value));
-        System.out.println(OK.toString());
-        System.out.println(set.inorderTraverse());
-        assert OK.contains(value) == set.contains(value); // tut
-        /**
-         -8 : OK - true set - false
-         [-10, -9, -8]
-         [-10] **/
+        //System.out.println(value + " : " + "OK - " + OK.contains(value)
+        //+ " set - " + set.contains(value));
+        //System.out.println(OK.toString());
+        //System.out.println(set.inorderTraverse());
+        assert OK.contains(value) == set.contains(value);
+
         if (add) {
             assert OK.add(value) == set.add(value);
         } else {
@@ -169,12 +156,8 @@ public class TestTreeSet {
             //System.out.println(set.inorderTraverse());
             //System.out.println("OK - " + OK.last()
             //+ " set - " + set.last());
-            assert OK.last().equals(set.last());  //tut
-            /**
-             [0, 2, 1]
-             [0, 1, 2]
-             OK - 1 set - 2
-             */
+            assert OK.last().equals(set.last());
+
         }
     }
 

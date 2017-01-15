@@ -3,105 +3,77 @@ package ru.mail.polis;
 import java.util.*;
 
 import static ru.mail.polis.RedBlackTree.Color.BLACK;
-
+import static ru.mail.polis.RedBlackTree.Color.RED;
 
 public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
 
     enum Color {RED, BLACK}
 
+    private final Node NIL = new Node(null);
     private int size;
-    private Node root;
-    private Node NIL;
+    private Node root = NIL;
     private Comparator<E> comparator;
 
     public RedBlackTree() {
         this.comparator = null;
-        NIL = new Node(BLACK, null, null, null, (E) new Integer(0));
     }
 
     public RedBlackTree(Comparator<E> comparator) {
         this.comparator = comparator;
-        NIL = new Node(BLACK, null, null, null, (E) new Integer(0));
     }
 
-    private void rightRotate(Node y) {
-        Node x = y.left;
-        y.left = x.right;
-        if (!x.right.equals(NIL)) {
-            x.right.parent = y;
-        }
-        x.parent = y.parent;
-        if (y.parent == null) {
-            root = x;
-        } else {
-            if (y.equals(y.parent.left)) {
-                y.parent.left = x;
-            } else {
-                y.parent.right = x;
-            }
-        }
-        x.right = y;
-        y.parent = x;
+    private int compare(E v1, E v2) {
+        return comparator == null ? v1.compareTo(v2) : comparator.compare(v1, v2);
     }
 
-    private void insertFix(Node z) {
-        Node y;
-        while (z.parent != null && z.parent.color == Color.RED) {
-            if (z.parent == z.parent.parent.left) {
-                y = z.parent.parent.right;
-                if (y.color == Color.RED) {
-                    z.parent.color = BLACK;
-                    y.color = BLACK;
-                    z.parent.parent.color = Color.RED;
-                    z = z.parent.parent;
-                } else {
-                    if (z == z.parent.right) {
-                        z = z.parent;
-                        leftRotate(z);
-                    }
-                    z.parent.color = BLACK;
-                    z.parent.parent.color = Color.RED;
-                    rightRotate(z.parent.parent);
-                }
+    private void rightRotate(Node n) {
+        if (n.parent != NIL) {
+            if (n == n.parent.left) {
+                n.parent.left = n.left;
             } else {
-                y = z.parent.parent.left;
-                if (y.color == Color.RED) {
-                    z.parent.color = BLACK;
-                    y.color = BLACK;
-                    z.parent.parent.color = Color.RED;
-                    z = z.parent.parent;
-                } else {
-                    if (z == z.parent.left) {
-                        z = z.parent;
-                        rightRotate(z);
-                    }
-                    z.parent.color = BLACK;
-                    z.parent.parent.color = Color.RED;
-                    leftRotate(z.parent.parent);
-                }
+                n.parent.right = n.left;
             }
+            n.left.parent = n.parent;
+            n.parent = n.left;
+            if (n.left.right != NIL) {
+                n.left.right.parent = n;
+            }
+            n.left = n.left.right;
+            n.parent.right = n;
+            return;
         }
-        root.color = BLACK;
+        Node rootLeft = root.left;
+        root.left = root.left.right;
+        rootLeft.right.parent = root;
+        root.parent = rootLeft;
+        rootLeft.right = root;
+        rootLeft.parent = NIL;
+        root = rootLeft;
     }
 
-    private void leftRotate(Node x) {
-        Node y = x.right;
-        x.right = y.left;
-        if (!y.left.equals(NIL)) {
-            y.left.parent = x;
-        }
-        y.parent = x.parent;
-        if (x.parent == null) {
-            root = y;
-        } else {
-            if (x.equals(x.parent.left)) {
-                x.parent.left = y;
+    private void leftRotate(Node n) {
+        if (n.parent != NIL) {
+            if (n == n.parent.left) {
+                n.parent.left = n.right;
             } else {
-                x.parent.right = y;
+                n.parent.right = n.right;
             }
+            n.right.parent = n.parent;
+            n.parent = n.right;
+            if (n.right.left != NIL) {
+                n.right.left.parent = n;
+            }
+            n.right = n.right.left;
+            n.parent.left = n;
+            return;
         }
-        y.left = x;
-        x.parent = y;
+        Node rootRight = root.right;
+        root.right = rootRight.left;
+        rootRight.left.parent = root;
+        root.parent = rootRight;
+        rootRight.left = root;
+        rootRight.parent = NIL;
+        root = rootRight;
     }
 
     @Override
@@ -112,12 +84,26 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
         return minimum(root).key;
     }
 
+    private Node minimum(Node x) {
+        while (!x.left.equals(NIL)) {
+            x = x.left;
+        }
+        return x;
+    }
+
     @Override
     public E last() {
         if (isEmpty()) {
             throw new NoSuchElementException("set is empty, no last element");
         }
         return maximum(root).key;
+    }
+
+    private Node maximum(Node x) {
+        while(!x.right.equals(NIL)){
+            x = x.right;
+        }
+        return x;
     }
 
 
@@ -148,71 +134,110 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
 
     @Override
     public boolean contains(E value) {
-        return findP(value, root);
-    }
-
-    private boolean findP(E key, Node node) {
-        if (key == null) {
-            throw new NullPointerException();
+        if (value == null) {
+            throw new NullPointerException("value is null");
         }
-        if (node == null || node.equals(NIL)) {
-            return false;
+        if (root != NIL) {
+            Node curr = root;
+            while (curr != NIL) {
+                int cmp = compare(curr.key, value);
+                if (cmp == 0) {
+                    return true;
+                } else if (cmp < 0) {
+                    curr = curr.right;
+                } else {
+                    curr = curr.left;
+                }
+            }
         }
-        if (key.equals(node.key)) {
-            return true;
-        }
-        if (key.compareTo(node.key) < 0) {
-            return findP(key, node.left);
-        } else {
-            return findP(key, node.right);
-        }
+        return false;
     }
 
     @Override
     public boolean add(E value) {
         if (value == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("Null value");
         }
-        if (this.contains(value)) {
-            //System.out.println("Tree contains node with value = " + value + ".");
-            return false;
-        }
-        if (root == null) {
-            root = new Node(BLACK, NIL, NIL, null, value);
-            //System.out.println("Root node created with value = " + value + ".");
+        boolean res;
+        Node nodeToAdd = new Node(value);
+        Node compNode = root;
+        if (root != NIL) {
+            while (true) {
+                if (compare(nodeToAdd.key, compNode.key) < 0) {
+                    if (compNode.left == NIL) {
+                        compNode.left = nodeToAdd;
+                        nodeToAdd.parent = compNode;
+                        nodeToAdd.color = RED;
+                        res = true;
+                        break;
+                    } else {
+                        compNode = compNode.left;
+                    }
+                } else if (compare(nodeToAdd.key, compNode.key) > 0) {
+                    if (compNode.right == NIL) {
+                        compNode.right = nodeToAdd;
+                        nodeToAdd.parent = compNode;
+                        nodeToAdd.color = RED;
+                        res = true;
+                        break;
+                    } else {
+                        compNode = compNode.right;
+                    }
+                } else {
+                    res = false;
+                    break;
+                }
+            }
+            if(res)
+                fixAdd(nodeToAdd);
         } else {
-            insert(new Node(BLACK, null, null, null, value));
-            //System.out.println("Node with value = " + value + " added.");
+            root = nodeToAdd;
+            nodeToAdd.color = BLACK;
+            nodeToAdd.parent = NIL;
+            res = true;
         }
-        size++;
-        return true;
+        if(res)
+            size++;
+        return res;
     }
 
-    private void insert(Node z) {
-        Node y = NIL;
-        Node x = root;
-        while (!x.equals(NIL)) {
-            y = x;
-            if (z.key.compareTo(x.key) < 0) {
-                x = x.left;
+    private void fixAdd(Node node) {
+        while (node.parent.color != BLACK) {
+            if (node.parent == node.parent.parent.left) {
+                Node uncle = node.parent.parent.right;
+                if (uncle.color == RED && uncle != NIL) {
+                    node.parent.color = BLACK;
+                    uncle.color = BLACK;
+                    node.parent.parent.color = RED;
+                    node = node.parent.parent;
+                } else {
+                    if (node == node.parent.right){
+                        node = node.parent;
+                        leftRotate(node);
+                    }
+                    node.parent.color = BLACK;
+                    node.parent.parent.color = RED;
+                    rightRotate(node.parent.parent);
+                }
             } else {
-                x = x.right;
+                Node uncle = node.parent.parent.left;
+                if (uncle.color == RED && uncle != NIL) {
+                    node.parent.color = BLACK;
+                    uncle.color = BLACK;
+                    node.parent.parent.color = RED;
+                    node = node.parent.parent;
+                } else {
+                    if (node == node.parent.left){
+                        node = node.parent;
+                        rightRotate(node);
+                    }
+                    node.parent.color = BLACK;
+                    node.parent.parent.color = RED;
+                    leftRotate(node.parent.parent);
+                }
             }
         }
-        z.parent = y;
-        if (y.equals(NIL)) {
-            root = z;
-        } else {
-            if (z.key.compareTo(y.key) < 0) {
-                y.left = z;
-            } else {
-                y.right = z;
-            }
-        }
-        z.left = NIL;
-        z.right = NIL;
-        z.color = Color.RED;
-        insertFix(z);
+        root.color = BLACK;
     }
 
 
@@ -221,158 +246,144 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
         if (value == null) {
             throw new NullPointerException();
         }
-        Node currentNode = root;
-        if (!contains(value)) {
-            //System.out.println("Node with this value = " + value + " does not contain.");
+        Node nodeForRemove, n, k;
+        nodeForRemove = nodeForRemove(value, root);
+        if(nodeForRemove == NIL){
             return false;
         }
-        while (currentNode != NIL && currentNode.key.compareTo(value) != 0) {
-            if (currentNode.key.compareTo(value) < 0) {
-                currentNode = currentNode.right;
-            } else {
-                currentNode = currentNode.left;
-            }
-        }
-        Node Z = currentNode;
-        Node Y;
-        if (Z.left == NIL || Z.right == NIL){
-            Y = Z;
-        } else{
-            Y = nextNode(Z);
-        }
-        Node X;
-        if (Y.left != NIL){
-            X = Y.left;
-        } else{
-            X = Y.right;
-        }
-        X.parent = Y.parent;
-        if (Y.parent == null) {
-            root = X;
-        }  else if (Y == Y.parent.left) { //NPE
-            Y.parent.left = X;
+        boolean isFixNeeded = nodeForRemove.color == BLACK;
+
+        if(nodeForRemove.left == NIL) {
+            n = nodeForRemove.right;
+            performTransplant(nodeForRemove, nodeForRemove.right);
+        } else if(nodeForRemove.right == NIL){
+            n = nodeForRemove.left;
+            performTransplant(nodeForRemove, nodeForRemove.left);
         } else {
-            Y.parent.right = X;
+            Node tempRoot = nodeForRemove.right;
+            while(tempRoot.left != NIL) {
+                tempRoot = tempRoot.left;
+            }
+            k = tempRoot;
+            isFixNeeded = k.color == BLACK;
+            n = k.right;
+            if(k.parent == nodeForRemove) {
+                n.parent = k;
+            } else {
+                performTransplant(k, k.right);
+                k.right = nodeForRemove.right;
+                k.right.parent = k;
+            }
+            performTransplant(nodeForRemove, k);
+            k.left = nodeForRemove.left;
+            k.left.parent = k;
+            k.color = nodeForRemove.color;
         }
-        if (Y != Z) {
-            Z.key = Y.key;
+
+        if(isFixNeeded){
+            fixRemove(n);
         }
-        if (Y.color == BLACK) {
-            fixDelete(X);
-        }
-        //System.out.println("Removing node with value = " + value + ". Successful.");
+
         size--;
         return true;
     }
 
-    private Node nextNode(Node currentNode) {
-        if (currentNode.right != NIL) {
-            return minimum(currentNode.right);
+    private void performTransplant(Node n, Node k) {
+        if(n.parent == NIL) {
+            root = k;
+        } else if(n == n.parent.left) {
+            n.parent.left = k;
+        } else {
+            n.parent.right = k;
         }
-        Node tempNode = currentNode.parent;
-        while (tempNode != NIL && currentNode != tempNode.right) {
-            currentNode = tempNode;
-            tempNode = tempNode.parent;
-        }
-        return tempNode;
+        k.parent = n.parent;
     }
 
-    private Node minimum(Node x) {
-        while (!x.left.equals(NIL)) {
-            x = x.left;
-        }
-        return x;
-    }
-
-    private Node maximum(Node x) {
-        while(!x.right.equals(NIL)){
-            x = x.right;
-        }
-        return x;
-    }
-
-    private void fixDelete(Node x) {
-        Node w;
-        while (!x.equals(root) && x.color == BLACK) {
-            if (x.equals(x.parent.left)) {
-                w = x.parent.right;
-                if (w.color == Color.RED) {
+    private void fixRemove(Node node) {
+        while(node != root && node.color == BLACK) {
+            if(node == node.parent.left) {
+                Node w = node.parent.right;
+                if(w.color == RED) {
                     w.color = BLACK;
-                    x.parent.color = Color.RED;
-                    leftRotate(x.parent);
-                    w = x.parent.right;
+                    node.parent.color = RED;
+                    leftRotate(node.parent);
+                    w = node.parent.right;
                 }
-
-                if (w.left.color == BLACK && w.right.color == BLACK) {
-                    w.color = Color.RED;
-                    x = x.parent;
-                } else {
-                    if (w.right.color == BLACK) {
-                        w.left.color = BLACK;
-                        w.color = Color.RED;
-                        rightRotate(w);
-                        w = x.parent.right;
-                    }
-                    w.color = x.parent.color;
-                    x.parent.color = BLACK;
+                if(w.left.color == BLACK && w.right.color == BLACK) {
+                    w.color = RED;
+                    node = node.parent;
+                    continue;
+                } else if(w.right.color == BLACK) {
+                    w.left.color = BLACK;
+                    w.color = RED;
+                    rightRotate(w);
+                    w = node.parent.right;
+                }
+                if(w.right.color == RED) {
+                    w.color = node.parent.color;
+                    node.parent.color = BLACK;
                     w.right.color = BLACK;
-                    leftRotate(x.parent);
-                    x = root;
+                    leftRotate(node.parent);
+                    node = root;
                 }
             } else {
-                w = x.parent.left;
-                if (w.color == Color.RED) {
+                Node w = node.parent.left;
+                if(w.color == RED) {
                     w.color = BLACK;
-                    x.parent.color = Color.RED;
-                    rightRotate(x.parent);
-                    w = x.parent.left;
+                    node.parent.color = RED;
+                    rightRotate(node.parent);
+                    w = node.parent.left;
                 }
-
-                if (w.right.color == BLACK && w.left.color == BLACK) {
-                    w.color = Color.RED;
-                    x = x.parent;
-                } else {
-                    if (w.left.color == BLACK) {
-                        w.right.color = BLACK;
-                        w.color = Color.RED;
-                        leftRotate(w);
-                        w = x.parent.left;
-                    }
-                    w.color = x.parent.color;
-                    x.parent.color = BLACK;
+                if(w.right.color == BLACK && w.left.color == BLACK) {
+                    w.color = RED;
+                    node = node.parent;
+                    continue;
+                } else if(w.left.color == BLACK) {
+                    w.right.color = BLACK;
+                    w.color = RED;
+                    leftRotate(w);
+                    w = node.parent.left;
+                }
+                if(w.left.color == RED) {
+                    w.color = node.parent.color;
+                    node.parent.color = BLACK;
                     w.left.color = BLACK;
-                    rightRotate(x.parent);
-                    x = root;
+                    rightRotate(node.parent);
+                    node = root;
                 }
             }
         }
-        x.color = BLACK;
+        node.color = BLACK;
     }
 
-    public class Node {
-        private Color color;
-        private Node left;
-        private Node right;
-        private Node parent;
-        private E key;
-
-        private Node(Color color, Node left, Node right, Node parent, E key) {
-            this.color = color;
-            this.left = left;
-            this.right = right;
-            this.key = key;
-            this.parent = parent;
+    private Node nodeForRemove(E value, Node n) {
+        if (isEmpty()) {
+            return NIL;
         }
-
-        private boolean equals(Node node) {
-            if (node == null){
-                return false;
+        if (compare(value, n.key) < 0) {
+            if (n.left != NIL) {
+                return nodeForRemove(value, n.left);
             }
-            return this.color == node.color
-                    && this.left == node.left
-                    && this.right == node.right
-                    && this.parent == node.parent
-                    && this.key.equals(node.key);
+        } else if (compare(value, n.key) > 0) {
+            if (n.right != NIL) {
+                return nodeForRemove(value, n.right);
+            }
+        } else {
+            return n;
         }
+        return NIL;
+    }
+
+    class Node {
+
+        Node(E value) {
+            this.key = value;
+        }
+
+        E key;
+        Node left = NIL;
+        Node right = NIL;
+        Node parent = NIL;
+        Color color = BLACK;
     }
 }
